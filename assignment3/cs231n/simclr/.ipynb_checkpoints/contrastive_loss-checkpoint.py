@@ -133,11 +133,9 @@ def compute_sim_matrix(out):
     
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     out_norm = torch.linalg.norm(out,dim=1,keepdims=True)
-    out_t = out.T
+    out_t = out.clone().T
     out_t_norm = torch.linalg.norm(out_t,dim=0,keepdims=True)
-    out /= out_norm
-    out_t /= out_t_norm
-    sim_matrix = torch.mm(out,out_t)
+    sim_matrix = torch.mm(out/out_norm,out_t/out_t_norm)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     
@@ -172,10 +170,10 @@ def simclr_loss_vectorized(out_left, out_right, tau, device='cuda'):
     mask = (torch.ones_like(exponential, device=device) - torch.eye(2 * N, device=device)).to(device).bool()
     
     # We apply the binary mask.
-    exponential = exponential.masked_select(mask).view(2 * N, -1)  # [2*N, 2*N-1]
+    exponential_masked = exponential.masked_select(mask).view(2 * N, -1)  # [2*N, 2*N-1]
     
     # Hint: Compute the denominator values for all augmented samples. This should be a 2N x 1 vector.
-    denom = exponential.sum(dim=1,keepdims=True)
+    denom = exponential_masked.sum(dim=1,keepdims=True)
 
     # Step 2: Compute similarity between positive pairs.
     # You can do this in two ways: 

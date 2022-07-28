@@ -38,14 +38,15 @@ def train(model, data_loader, train_optimizer, epoch, epochs, batch_size=32, tem
         ##############################################################################
         _,out_left = model(x_i)
         _,out_right = model(x_j)
-        loss = simclr_loss_vectorized(out_left, out_right, temperature, device='cpu')
+        loss = simclr_loss_vectorized(out_left, out_right, temperature, device)
         
         ##############################################################################
         #                               END OF YOUR CODE                             #
         ##############################################################################
         
         train_optimizer.zero_grad()
-        loss.backward()
+        with torch.autograd.set_detect_anomaly(True):
+            loss.backward()
         train_optimizer.step()
 
         total_num += batch_size
